@@ -2,6 +2,8 @@ require("dotenv").config();
 const TelegramApi = require("node-telegram-bot-api");
 const axios = require("axios");
 const connectDB = require("./config");
+const userModel = require("./config/models/user.model")
+const userVideoModel = require("./config/models/video.model")
 
 
 const TOKEN = process.env.TOKEN;  
