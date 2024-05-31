@@ -1,21 +1,19 @@
 require("dotenv").config();
 const TelegramApi = require("node-telegram-bot-api");
 const axios = require("axios");
-const api = process.env.TOKEN;  
-const bot = new TelegramApi(api, { polling: true });
 
-async function downloadIns(insta_url) {z
+const TOKEN = process.env.TOKEN;  
+const bot = new TelegramApi(TOKEN, { polling: true });
+
+async function downloadInstagram(insta_url) {
   try {
-    const options = {
-      method: "GET",
-      url: "https://instagram-media-downloader.p.rapidapi.com/rapid/post.php",
+    const response = await axios.get("https://instagram-media-downloader.p.rapidapi.com/rapid/post.php", {
       params: { url: insta_url },
       headers: {
-        "X-RapidAPI-Key": "25415b622emshc4c6c96d8990326p111fb7jsn0ea4a69a9112",
+        "X-RapidAPI-Key": "f2540d495emsh79f8cd9e6c27c93p116d29jsn2432dcacc31d",
         "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
       },
-    };
-    const response = await axios.request(options);
+    });
     return {
       videoUrl: response.data.video,
       photoUrl: response.data.image,
@@ -43,24 +41,28 @@ const start = () => {
         return;
       }
 
-      const getVideoUrl = await downloadIns(msg.text);
-      if (getVideoUrl && getVideoUrl.videoUrl) {
+      const chatId = msg.chat.id; // Extracting chat_id from the message
+      const videoInfo = await downloadInstagram(msg.text);
+      if (videoInfo && videoInfo.videoUrl) {
         await bot.sendVideo(
-          msg.chat.id,
-          getVideoUrl.videoUrl,
-          {
-            caption: `${getVideoUrl.caption}\nOur Channel @shohsultonblog`
-          }
+          chatId, // Sending the message to the correct chat
+          videoInfo.videoUrl,
+          { caption: `${videoInfo.caption}\nOur Channel @shohsultonblog` }
         );
       } else {
-        await bot.sendMessage(msg.chat.id, "Unable to download the video. Please check the link and try again.");
+        await bot.sendMessage(chatId, "Unable to download the video. Please check the link and try again.");
       }
     } catch (error) {
       console.error("Error handling message:", error);
     }
 
     try {
-      await bot.sendMessage(1764255740, `New User. Name: ${msg.from.first_name} (${msg.from.username}), Message: ${msg.text}`);
+      const adminChatId = process.env.ADMIN_CHAT_ID;
+      if (adminChatId) {
+        await bot.sendMessage(adminChatId, `New User. Name: ${msg.from.first_name} (${msg.from.username}), Message: ${msg.text}`);
+      } else {
+        console.error("Admin chat ID not configured.");
+      }
     } catch (error) {
       console.error("Error sending notification to admin:", error);
     }
