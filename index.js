@@ -1,9 +1,13 @@
 require("dotenv").config();
 const TelegramApi = require("node-telegram-bot-api");
 const axios = require("axios");
+const connectDB = require("./config");
+
 
 const TOKEN = process.env.TOKEN;  
 const bot = new TelegramApi(TOKEN, { polling: true });
+
+connectDB()
 
 async function downloadInstagram(insta_url) {
   try {
