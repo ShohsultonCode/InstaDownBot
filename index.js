@@ -8,10 +8,8 @@ const UserVideo = require("./config/models/video.model");
 const TOKEN = process.env.TOKEN;
 const bot = new TelegramApi(TOKEN, { polling: true });
 
-// Connect to the database
 connectDB();
 
-// Function to download Instagram video
 async function downloadInstagram(insta_url) {
   try {
     const response = await axios.get(
@@ -35,7 +33,6 @@ async function downloadInstagram(insta_url) {
   }
 }
 
-// Function to split long text into chunks
 function splitMessage(text, chunkSize = 4096) {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize) {
@@ -44,7 +41,6 @@ function splitMessage(text, chunkSize = 4096) {
   return chunks;
 }
 
-// Bot initialization and message handling
 const start = () => {
   bot.setMyCommands([
     { command: "/start", description: "Start" },
@@ -84,13 +80,11 @@ const start = () => {
             console.error(
               "Error: Duplicate key error for chatId with null value."
             );
-            // Handle the duplicate key error here, such as logging and notifying the user
           } else {
             console.error("Error handling message:", error);
           }
         }
 
-        // Send a welcome message
         await bot.sendMessage(
           chatId,
           `Hi <b>${userName || "there"}</b>. If you want to download Instagram reels or videos, please send me a link.`,
@@ -99,13 +93,9 @@ const start = () => {
         return;
       }
 
-      // Check if the user is admin and message is /admin
       if (msg.text === "/admin" && isAdmin(userTelegramUsername)) {
-        // Retrieve all users
         const users = await User.find();
-        // Retrieve all videos
         const videos = await UserVideo.find();
-        // Format data into a text table
         let textTable = "User ID | User Name | Phone Number | Telegram Username | Video Link\n";
 
         users.forEach((user) => {
@@ -114,11 +104,9 @@ const start = () => {
               (video) => video.user_id.toString() === user._id.toString()
             )
             .map((video) => video.video_link);
-          // Table row
           textTable += `${user._id} | ${user.user_name} | ${user.user_phone_number} | ${user.user_telegram_username} | ${videoLinks.join(", ")}\n`;
         });
 
-        // Split the text into chunks and send each chunk separately
         const chunks = splitMessage(textTable);
         for (const chunk of chunks) {
           await bot.sendMessage(chatId, chunk);
@@ -129,20 +117,16 @@ const start = () => {
 
       const videoInfo = await downloadInstagram(msg.text);
       if (videoInfo && videoInfo.videoUrl) {
-        // Get the user from the database
         const user = await User.findOne({
           user_telegram_username: userTelegramUsername,
         });
         if (user) {
-          // Save the video link along with the user ID
           await UserVideo.create({
             user_id: user._id,
             video_link: msg.text,
           });
         }
 
-        // Send the video to the user
-        console.log(videoInfo.videoUrl);
         await bot.sendVideo(chatId, videoInfo.videoUrl, {
           caption: `${videoInfo.caption ? videoInfo.caption : "Something"
             }\n Our Channel @shohsultonblog`,
@@ -159,12 +143,8 @@ const start = () => {
   });
 };
 
-// Function to check if the user is admin
 function isAdmin(username) {
-  // Your logic to determine if the user is admin
-  // For demonstration purposes, let's assume only the user with username "shohsultonSP" is an admin
   return username === "shohsultonSP";
 }
 
-// Start the bot and new
 start();
