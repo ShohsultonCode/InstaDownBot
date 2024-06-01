@@ -166,5 +166,5 @@ function isAdmin(username) {
   return username === "shohsultonSP";
 }
 
-// Start the bot
+// Start the bot and new
 start();
