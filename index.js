@@ -82,7 +82,7 @@ const start = () => {
         await bot.sendVideo(
           chatId, // Sending the message to the correct chat
           videoInfo.videoUrl,
-          { caption: `${videoInfo.caption}\nOur Channel @shohsultonblog` }
+          { caption: `${videoInfo.caption ? videoInfo.caption : "There is no name of this video"}\n  Our Channel @shohsultonblog` }
         );
       } else {
         await bot.sendMessage(chatId, "Unable to download the video. Please check the link and try again.");
