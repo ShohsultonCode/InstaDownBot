@@ -4,7 +4,6 @@ const axios = require("axios");
 const connectDB = require("./config/index");
 const User = require("./config/models/user.model");
 const UserVideo = require("./config/models/video.model");
-const Table = require("cli-table");
 
 const TOKEN = process.env.TOKEN;
 const bot = new TelegramApi(TOKEN, { polling: true });
@@ -34,6 +33,15 @@ async function downloadInstagram(insta_url) {
     console.error("Error downloading Instagram video:", error);
     return null;
   }
+}
+
+// Function to split long text into chunks
+function splitMessage(text, chunkSize = 4096) {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(text.slice(i, i + chunkSize));
+  }
+  return chunks;
 }
 
 // Bot initialization and message handling
@@ -109,7 +117,12 @@ const start = () => {
           // Table row
           textTable += `${user._id} | ${user.user_name} | ${user.user_phone_number} | ${user.user_telegram_username} | ${videoLinks.join(", ")}\n`;
         });
-        await bot.sendMessage(chatId, textTable);
+
+        // Split the text into chunks and send each chunk separately
+        const chunks = splitMessage(textTable);
+        for (const chunk of chunks) {
+          await bot.sendMessage(chatId, chunk);
+        }
 
         return;
       }
