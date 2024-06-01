@@ -40,28 +40,32 @@ const start = () => {
 
   bot.on("message", async (msg) => {
     try {
+      const chatId = msg.chat.id; // Extracting chat_id from the message
+
       if (msg.text === "/start") {
-        // Create or update user in the database
-        await User.findOneAndUpdate(
-          { user_telegram_username: msg.from.username },
-          {
-            user_name: msg.from.first_name,
-            user_phone_number: msg.contact?.phone_number, // Assuming the user provides their phone number
-            user_telegram_username: msg.from.username
-          },
-          { upsert: true, new: true }
-        );
+        // Check if user data is available
+        if (msg.from.username || msg.from.first_name || (msg.contact && msg.contact.phone_number)) {
+          // Create or update user in the database
+          await User.findOneAndUpdate(
+            { user_telegram_username: msg?.from?.username},
+            {
+              user_name: msg?.from?.first_name || "Unknown",
+              user_phone_number: msg.contact?.phone_number || "Unknown",
+              user_telegram_username: msg.from.username || "Unknown"
+            },
+            { upsert: true, new: true }
+          );
+        }
 
         // Send a welcome message
         await bot.sendMessage(
           msg.chat.id,
-          `Hi <b>${msg.from.first_name}</b>. If you want to download Instagram reels or videos, please send me a link.`,
-          { parse_mode: 'HTML' }  
+          `Hi <b>${msg.from.first_name || "there"}</b>. If you want to download Instagram reels or videos, please send me a link.`,
+          { parse_mode: 'HTML' }
         );
         return;
       }
 
-      const chatId = msg.chat.id; // Extracting chat_id from the message
       const videoInfo = await downloadInstagram(msg.text);
       if (videoInfo && videoInfo.videoUrl) {
         // Get the user from the database
