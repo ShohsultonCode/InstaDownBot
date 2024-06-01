@@ -40,7 +40,6 @@ async function downloadInstagram(insta_url) {
 const start = () => {
   bot.setMyCommands([
     { command: "/start", description: "Start" },
-    { command: "/admin", description: "Admin" }, // Add the /admin command
   ]);
 
   bot.on("message", async (msg) => {
