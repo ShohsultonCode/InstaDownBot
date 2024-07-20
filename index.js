@@ -4,11 +4,17 @@ const axios = require("axios");
 const connectDB = require("./config/index");
 const User = require("./config/models/user.model");
 const UserVideo = require("./config/models/video.model");
+const express = require('express');
+const app = express();
 
 const TOKEN = process.env.TOKEN;
 const bot = new TelegramApi(TOKEN, { polling: true });
 
 connectDB();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT,  () => {
+  console.log(`Server is running....`);
+});
 
 async function downloadInstagram(insta_url) {
   try {
